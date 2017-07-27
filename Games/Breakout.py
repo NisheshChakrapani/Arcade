@@ -1,4 +1,4 @@
-import pygame, random
+import pygame, random, math
 
 class Brick:
     def __init__(self, position, powerup):
@@ -15,6 +15,8 @@ class Brick:
         self.x = position[0]
         self.y = position[1]
         self.rect = pygame.Rect(self.x, self.y, 50, 16)
+        self.top_rect = pygame.Rect(self.x, self.y, 50, 1)
+        self.bottom_rect = pygame.Rect(self.x, self.y+16, 50, 1)
 
 class BrickArray:
     def __init__(self, num_rows, powerup_prob):
@@ -50,7 +52,7 @@ class Breakout:
         os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (50, 50)
         pygame.init()
         agencyFB = pygame.font.SysFont("Agency FB", 40)
-        bricks = BrickArray((3*(self.__difficulty)), (0.05/self.__difficulty))
+        bricks = BrickArray((3*(self.__difficulty)+1), (0.05/self.__difficulty))
 
         screen = pygame.display.set_mode([650, 480])
         running = 1
@@ -62,6 +64,8 @@ class Breakout:
         ball_color = [220, 50, 50]
         ball_speed_x = self.__difficulty*2
         ball_speed_y = self.__difficulty*2+2
+        ball_angle = 0
+
         paddle_x = 120
         paddle_y = 450
         paddle_width = 60
@@ -72,6 +76,7 @@ class Breakout:
         pygame.mouse.set_visible(0)
         waiting = 0
 
+        pygame.time.wait(3000)
         while running:
             clock.tick(60)
             for event in pygame.event.get():
@@ -117,14 +122,7 @@ class Breakout:
                 ball_speed_x*=-1
             elif ball_rect.colliderect(paddle_rect):
                 ball_speed_y*=-1
-                if ball_x+ball_radius < paddle_x+(paddle_width/4):
-                    ball_speed_x = self.__difficulty*-2
-                elif ball_x+ball_radius < paddle_x+(paddle_width/2):
-                    ball_speed_x = self.__difficulty*-1.5
-                elif ball_x+ball_radius > paddle_x+(paddle_width/2):
-                    ball_speed_x = self.__difficulty*1.5
-                elif ball_x+ball_radius > paddle_x+(paddle_width/4):
-                    ball_speed_x = self.__difficulty*2
+                ball_speed_x = math.cos(ball_angle) * -5
 
             for row_index in range(0, len(bricks.brick_array)):
                 for column_index in range(0, len(bricks.brick_array[row_index])):
@@ -153,7 +151,13 @@ class Breakout:
                         if brick.rect.collidepoint(ball_rect.midleft) or brick.rect.collidepoint(ball_rect.midright):
                             ball_speed_x*=-1
                         else:
-                            ball_speed_y*=-1
+                            if brick.bottom_rect.colliderect(ball_rect):
+                                ball_speed_y = abs(ball_speed_y)
+                                ball_y -= 10
+                            else:
+                                ball_speed_y = -abs(ball_speed_y)
+                        continue
+                    continue
 
             score_label = agencyFB.render("Score: " + str(score), 1, (0,255,0))
             lives_label = agencyFB.render("Deaths: " + str(gameLives), 1, (0,255,0))
@@ -167,6 +171,8 @@ class Breakout:
             pygame.draw.rect(screen, paddle_color, [paddle_x, paddle_y, paddle_width, paddle_height], 0)
 
             pygame.display.update()
+
+            ball_angle = 90 + (paddle_rect.midtop[0] - ball_rect.midbottom[0])
 
             max_score = (bricks.num_rows-1)*13
             if score == max_score:
