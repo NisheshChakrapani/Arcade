@@ -2,6 +2,7 @@
   <dictionary name="nishu">
     <words>
       <w>hitbox</w>
+      <w>powerup</w>
     </words>
   </dictionary>
 </component>
