@@ -47,8 +47,6 @@ speed_updated = 0
 moved = 0
 difficulty = 1
 
-# TODO: Add angle of bounce depending on where on the paddle the ball hits
-
 while running:
     clock.tick(60)
     for event in pygame.event.get():
