@@ -1,9 +1,10 @@
 import pygame, random, math
 
 class Brick:
-    def __init__(self, position, powerup):
+    def __init__(self, position, powerup, color):
         self.position = position
         self.powerup = powerup
+        self.color = color
 
         if powerup:
             image = pygame.image.load("Explode.png")
@@ -27,13 +28,37 @@ class BrickArray:
     def load_bricks(self):
         self.brick_array = []
 
-        for i in range(0, 13):
+        colors = []
+        for i in range(1, self.num_rows):
             brick_row = []
-            for j in range(1, self.num_rows):
+            rand = random.randint(0, 9)
+            while rand in colors:
+                rand = random.randint(1, 9)
+            colors.append(rand)
+            for j in range(0, 13):
+                if rand == 1:
+                    color = (155, 0, 0)
+                elif rand == 2:
+                    color = (0, 255, 0)
+                elif rand == 3:
+                    color = (0, 0, 255)
+                elif rand == 4:
+                    color = (255, 255, 0)
+                elif rand == 5:
+                    color = (255, 0, 255)
+                elif rand == 6:
+                    color = (0, 255, 255)
+                elif rand == 7:
+                    color = (135, 0, 255)
+                elif rand == 8:
+                    color = (255, 135, 0)
+                elif rand == 9:
+                    color = (195, 0, 195)
+
                 if random.uniform(0, 1) < self.__powerup_prob:
-                    brick = Brick((50*i, 16*j), self.__powerup_prob)
+                    brick = Brick((50*j, 16*i), self.__powerup_prob, color)
                 else:
-                    brick = Brick((50*i, 16*j), 0)
+                    brick = Brick((50*j, 16*i), 0, color)
                 brick_row.append(brick)
             self.brick_array.append(brick_row)
 
@@ -95,7 +120,7 @@ class Breakout:
             ball_y = ball_y + ball_speed_y
             ball_x = ball_x + ball_speed_x
 
-            if ball_y > screen.get_height() - ball_radius:
+            if ball_y > screen.get_height():
                 gameLives+=1
                 ball_x = 50
                 ball_y = 250
@@ -106,19 +131,19 @@ class Breakout:
                 pygame.time.wait(1000)
 
             # check if the ball hit the top of the screen
-            if ball_y < ball_radius:
+            if ball_y < 0:
                 ball_speed_y*=-1
             # check if the ball hit the left side of the screen
-            if ball_x < ball_radius:
+            if ball_x < 0:
                 ball_speed_x*=-1
             # check if the ball hit the right side of the screen
-            if ball_x > screen.get_width() - ball_radius:
+            if ball_x > screen.get_width():
                 ball_speed_x*=-1
 
             ball_rect = pygame.Rect(ball_x - ball_radius, ball_y - ball_radius, ball_radius * 2, ball_radius * 2)
             paddle_rect = pygame.Rect(paddle_x, paddle_y, paddle_width, paddle_height)
 
-            if ball_rect.collidepoint(paddle_rect.midleft) or ball_rect.collidepoint(paddle_rect.midright) or ball_rect.collidepoint((paddle_x,paddle_y+5)) or ball_rect.collidepoint((paddle_x+paddle_width,paddle_y+5)):
+            if ball_rect.collidepoint(paddle_rect.midleft) or ball_rect.collidepoint(paddle_rect.midright):
                 ball_speed_x*=-1
             elif ball_rect.colliderect(paddle_rect):
                 ball_speed_y*=-1
@@ -135,9 +160,10 @@ class Breakout:
                             if row_index > 0 and bricks.brick_array[row_index - 1][column_index] is not None:
                                 bricks.brick_array[row_index - 1][column_index] = None
                                 score += 1
-                            if row_index < 12 and bricks.brick_array[row_index + 1][column_index] is not None:
-                                bricks.brick_array[row_index + 1][column_index] = None
-                                score += 1
+                            if row_index < 12:
+                                if bricks.brick_array[row_index + 1][column_index] is not None:
+                                    bricks.brick_array[row_index + 1][column_index] = None
+                                    score += 1
                             if column_index > 0 and bricks.brick_array[row_index][column_index - 1] is not None:
                                 bricks.brick_array[row_index][column_index - 1] = None
                                 score += 1
@@ -166,7 +192,10 @@ class Breakout:
             for row in bricks.brick_array:
                 for brick in row:
                     if brick is not None:
-                        screen.blit(brick.image, brick.rect)
+                        if brick.powerup:
+                            screen.blit(brick.image, brick.rect)
+                        else:
+                            pygame.draw.rect(screen, brick.color, brick.rect, 0)
             pygame.draw.circle(screen, ball_color, [int(ball_x), int(ball_y)], ball_radius, 0)
             pygame.draw.rect(screen, paddle_color, [paddle_x, paddle_y, paddle_width, paddle_height], 0)
 
@@ -176,4 +205,5 @@ class Breakout:
 
             max_score = (bricks.num_rows-1)*13
             if score == max_score:
+                print ("You win!")
                 running = 0
