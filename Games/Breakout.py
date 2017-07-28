@@ -55,7 +55,7 @@ class BrickArray:
                 elif rand == 9:
                     color = (195, 0, 195)
 
-                if random.uniform(0, 1) < self.__powerup_prob:
+                if random.uniform(0, 1) < self.__powerup_prob and self.num_rows - 1 > i > 1 and 12 > j > 0:
                     brick = Brick((50*j, 16*i), self.__powerup_prob, color)
                 else:
                     brick = Brick((50*j, 16*i), 0, color)
@@ -77,7 +77,7 @@ class Breakout:
         os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (50, 50)
         pygame.init()
         agencyFB = pygame.font.SysFont("Agency FB", 40)
-        bricks = BrickArray((3*(self.__difficulty)+1), (0.05/self.__difficulty))
+        bricks = BrickArray((3*(self.__difficulty)+1), (0.1/self.__difficulty))
 
         screen = pygame.display.set_mode([650, 480])
         running = 1
@@ -117,10 +117,7 @@ class Breakout:
 
             screen.fill((0, 0, 0))
 
-            ball_y = ball_y + ball_speed_y
-            ball_x = ball_x + ball_speed_x
-
-            if ball_y > screen.get_height():
+            if ball_y > screen.get_height() - ball_radius:
                 gameLives+=1
                 ball_x = 50
                 ball_y = 250
@@ -137,17 +134,27 @@ class Breakout:
             if ball_x < 0:
                 ball_speed_x*=-1
             # check if the ball hit the right side of the screen
-            if ball_x > screen.get_width():
+            if ball_x > screen.get_width() - ball_radius:
                 ball_speed_x*=-1
 
             ball_rect = pygame.Rect(ball_x - ball_radius, ball_y - ball_radius, ball_radius * 2, ball_radius * 2)
             paddle_rect = pygame.Rect(paddle_x, paddle_y, paddle_width, paddle_height)
 
+            pygame.draw.circle(screen, ball_color, [int(ball_x), int(ball_y)], ball_radius, 0)
+            pygame.draw.rect(screen, paddle_color, [paddle_x, paddle_y, paddle_width, paddle_height], 0)
+            #pygame.draw.rect(screen, (255,0,0), paddle_rect, 2)
+
             if ball_rect.collidepoint(paddle_rect.midleft) or ball_rect.collidepoint(paddle_rect.midright):
                 ball_speed_x*=-1
             elif ball_rect.colliderect(paddle_rect):
                 ball_speed_y*=-1
-                ball_speed_x = math.cos(ball_angle) * -5
+                ball_angle = 90 + (paddle_rect.midtop[0] - ball_rect.midbottom[0])
+                ball_speed_x = 0
+                ball_speed_x = math.cos(ball_angle)*5
+                if ball_angle < 90:
+                    ball_speed_x = abs(ball_speed_x)
+                elif ball_angle > 90:
+                    ball_speed_x = -abs(ball_speed_x)
 
             for row_index in range(0, len(bricks.brick_array)):
                 for column_index in range(0, len(bricks.brick_array[row_index])):
@@ -160,7 +167,7 @@ class Breakout:
                             if row_index > 0 and bricks.brick_array[row_index - 1][column_index] is not None:
                                 bricks.brick_array[row_index - 1][column_index] = None
                                 score += 1
-                            if row_index < 12:
+                            if row_index < bricks.num_rows - 1:
                                 if bricks.brick_array[row_index + 1][column_index] is not None:
                                     bricks.brick_array[row_index + 1][column_index] = None
                                     score += 1
@@ -196,14 +203,16 @@ class Breakout:
                             screen.blit(brick.image, brick.rect)
                         else:
                             pygame.draw.rect(screen, brick.color, brick.rect, 0)
-            pygame.draw.circle(screen, ball_color, [int(ball_x), int(ball_y)], ball_radius, 0)
-            pygame.draw.rect(screen, paddle_color, [paddle_x, paddle_y, paddle_width, paddle_height], 0)
+
+            ball_y = ball_y + ball_speed_y
+            ball_x = ball_x + ball_speed_x
 
             pygame.display.update()
 
-            ball_angle = 90 + (paddle_rect.midtop[0] - ball_rect.midbottom[0])
-
             max_score = (bricks.num_rows-1)*13
             if score == max_score:
-                print ("You win!")
+                win_label = agencyFB.render("You win!", 1, (0,255,0))
+                screen.blit(win_label, (200, 200))
                 running = 0
+
+        pygame.time.wait(2000)
