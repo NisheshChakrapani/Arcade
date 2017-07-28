@@ -43,7 +43,7 @@ class Pong():
 
         ball_radius = 10
         ball_color = (255,255,0)
-        ball_x_speed = 5 + 3*(self.__difficulty-1)
+        ball_x_speed = 5
         direction = randint(0,1)
         if direction == 0:
             ball_x_speed*=-1
@@ -118,7 +118,7 @@ class Pong():
 
             if ball_x > screen.get_width():
                 rally_count = 0
-                ball_x_speed = -5 - 3*(self.__difficulty-1)
+                ball_x_speed = -5
                 ball_y_speed = 5
                 ball_x = int((windowSize[0] / 2) - ball_radius)
                 ball_y = int((windowSize[1] / 2) - ball_radius)
@@ -129,7 +129,7 @@ class Pong():
 
             elif ball_x < 0:
                 rally_count = 0
-                ball_x_speed = 5 + 3*(self.__difficulty-1)
+                ball_x_speed = 5
                 ball_y_speed = 5
                 ball_x = int((windowSize[0] / 2) - ball_radius)
                 ball_y = int((windowSize[1] / 2) - ball_radius)
@@ -155,8 +155,10 @@ class Pong():
                     ball_x_speed = -abs(ball_x_speed)
                 else:
                     ball_x_speed*=-1
-                    ball_angle = 90 + (paddle_one_hitbox.midright[1] - ball_hitbox.midleft[1])
-                    ball_y_speed = math.cos(ball_angle) * -5
+                    ball_angle = (paddle_one_hitbox.midright[1] - ball_hitbox.midleft[1])
+                    ball_y_speed = math.sin(ball_angle) * -5
+                    if ball_angle < 0:
+                        ball_y_speed *= -1
 
             elif ball_hitbox.colliderect(paddle_two_hitbox):
                 if last_hit != 2:
@@ -168,8 +170,10 @@ class Pong():
                     ball_x_speed = abs(ball_x_speed)
                 else:
                     ball_x_speed*=-1
-                    ball_angle = 90 + (paddle_two_hitbox.midleft[1] - ball_hitbox.midright[1])
-                    ball_y_speed = math.cos(ball_angle) * -5
+                    ball_angle = (paddle_two_hitbox.midleft[1] - ball_hitbox.midright[1])
+                    ball_y_speed = math.sin(ball_angle) * -5
+                    if ball_angle < 0:
+                        ball_y_speed *= -1
 
             if rally_count % 5 == 1:
                 speed_updated = 0

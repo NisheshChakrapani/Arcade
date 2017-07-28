@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../Arcade/.idea/Pong.iml" filepath="$PROJECT_DIR$/../Arcade/.idea/Pong.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Arcade.iml" filepath="$PROJECT_DIR$/.idea/Arcade.iml" />
+      <module fileurl="file://C:\Users\nishu\Documents\PyCharm Projects\Arcade\.idea\Pong.iml" filepath="C:\Users\nishu\Documents\PyCharm Projects\Arcade\.idea\Pong.iml" />
     </modules>
   </component>
 </project>
